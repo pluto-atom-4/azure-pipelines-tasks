@@ -1,0 +1,226 @@
+{
+  "id": "af57a3af-0690-407e-9320-9ba282b376d8",
+  "name": "AzurePowerShellAddAccessPolicy",
+  "friendlyName": "Add KeyVault Access Policy",
+  "description": "Run a PowerShell script within an Azure environment",
+  "helpMarkDown": "",
+  "helpUrl": "https://aka.ms/azurepowershelltroubleshooting",
+  "category": "Deploy",
+  "visibility": ["Build", "Release"],
+  "runsOn": ["Agent", "DeploymentGroup"],
+  "author": "nbtmb",
+  "version": {
+    "Major": 0,
+    "Minor": 1,
+    "Patch": 21
+  },
+  "releaseNotes": "Added support for Az Module and cross platform agents.",
+  "groups": [
+    {
+      "name": "AzureDetails",
+      "displayName": "Azure Details",
+      "isExpanded": true
+    },
+    {
+      "name": "PowerScriptDetails",
+      "displayName": "PowerScript Details",
+      "isExpanded": true
+    },
+    {
+      "name": "AzurePowerShellVersionOptions",
+      "displayName": "Azure PowerShell version options",
+      "isExpanded": true
+    },
+    {
+      "name": "advanced",
+      "displayName": "Advanced",
+      "isExpanded": false
+    }
+  ],
+  "minimumAgentVersion": "2.115.0",
+  "inputs": [
+    {
+      "name": "ConnectedServiceNameARM",
+      "aliases": ["azureSubscription"],
+      "type": "connectedService:AzureRM",
+      "label": "Azure subscription",
+      "defaultValue": "",
+      "required": true,
+      "groupName": "AzureDetails",
+      "helpMarkDown": "Select the Azure Resource Manager subscription for the deployment."
+    },
+    {
+      "name": "ResourceGroupName",
+      "type": "pickList",
+      "label": "Resource group",
+      "required": true,
+      "groupName": "AzureDetails",
+      "helpMarkDown": "Provide the name of a resource group.",
+      "properties": {
+        "EditableOptions": "True"
+      }
+    },
+    {
+      "name": "KeyVaultName",
+      "type": "pickList",
+      "label": "Key vault",
+      "required": true,
+      "groupName": "AzureDetails",
+      "helpMarkDown": "Provide the name of an existing key vault",
+      "properties": {
+        "EditableOptions": "True"
+      }
+    },
+    {
+      "name": "ScriptType",
+      "type": "radio",
+      "label": "Script Type",
+      "required": false,
+      "helpMarkDown": "Type of the script: File Path or Inline Script",
+      "defaultValue": "FilePath",
+      "groupName": "PowerScriptDetails",
+      "options": {
+        "FilePath": "Script File Path",
+        "InlineScript": "Inline Script"
+      }
+    },
+    {
+      "name": "ScriptPath",
+      "type": "filePath",
+      "label": "Script Path",
+      "defaultValue": "AddKeyVaultAccessPolicy.ps1",
+      "required": false,
+      "groupName": "PowerScriptDetails",
+      "helpMarkDown": "Path of the script. Should be fully qualified path or relative to the default working directory.",
+      "visibleRule": "ScriptType = FilePath"
+    },
+    {
+      "name": "Inline",
+      "type": "multiLine",
+      "label": "Inline Script",
+      "required": false,
+      "defaultValue": "# You can write your azure powershell scripts inline here. \n# You can also pass predefined and custom variables to this script using arguments",
+      "groupName": "PowerScriptDetails",
+      "helpMarkDown": "Enter the script to execute.",
+      "visibleRule": "ScriptType = InlineScript",
+      "properties": {
+        "resizable": "true",
+        "rows": "10",
+        "maxLength": "5000"
+      }
+    },
+    {
+      "name": "ScriptArguments",
+      "type": "string",
+      "label": "Script Arguments",
+      "defaultValue": "",
+      "groupName": "PowerScriptDetails",
+      "visibleRule": "ScriptType = FilePath",
+      "required": false,
+      "properties": {
+        "editorExtension": "ms.vss-services-azure.parameters-grid"
+      },
+      "helpMarkDown": "Additional parameters to pass to PowerShell.  Can be either ordinal or named parameters."
+    },
+    {
+      "name": "errorActionPreference",
+      "type": "pickList",
+      "label": "ErrorActionPreference",
+      "required": false,
+      "defaultValue": "stop",
+      "groupName": "PowerScriptDetails",
+      "options": {
+        "stop": "Stop",
+        "continue": "Continue",
+        "silentlyContinue": "SilentlyContinue"
+      },
+      "helpMarkDown": "Select the value of the ErrorActionPreference variable for executing the script."
+    },
+    {
+      "name": "FailOnStandardError",
+      "type": "boolean",
+      "label": "Fail on Standard Error",
+      "required": false,
+      "defaultValue": "false",
+      "groupName": "PowerScriptDetails",
+      "helpMarkDown": "If this is true, this task will fail if any errors are written to the error pipeline, or if any data is written to the Standard Error stream."
+    },
+    {
+      "name": "TargetAzurePs",
+      "aliases": ["azurePowerShellVersion"],
+      "type": "radio",
+      "label": "Azure PowerShell Version",
+      "defaultValue": "LatestVersion",
+      "required": false,
+      "options": {
+        "LatestVersion": "Latest installed version",
+        "OtherVersion": "Specify other version"
+      },
+      "groupName": "AzurePowerShellVersionOptions",
+      "helpMarkDown": "In case of hosted agents, the supported Azure PowerShell Version is: 1.0.0, 1.6.0, 2.3.2, 2.6.0, 3.1.0 (Hosted VS2017 Queue).\nTo pick the latest version available on the agent, select \"Latest installed version\".\n\nFor private agents you can specify preferred version of Azure PowerShell using \"Specify version\""
+    },
+    {
+      "name": "CustomTargetAzurePs",
+      "aliases": ["preferredAzurePowerShellVersion"],
+      "type": "string",
+      "label": "Preferred Azure PowerShell Version",
+      "defaultValue": "",
+      "required": true,
+      "visibleRule": "TargetAzurePs = OtherVersion",
+      "groupName": "AzurePowerShellVersionOptions",
+      "helpMarkDown": "Preferred Azure PowerShell Version needs to be a proper semantic version eg. 1.2.3. Regex like 2.\\*,2.3.\\* is not supported. The Hosted VS2017 Pool currently supports Az module version: 1.0.0, 1.6.0, 2.3.2, 2.6.0, 3.1.0"
+    },
+    {
+      "name": "pwsh",
+      "type": "boolean",
+      "label": "Use PowerShell Core",
+      "required": false,
+      "defaultValue": "false",
+      "helpMarkDown": "If this is true, then on Windows the task will use pwsh.exe from your PATH instead of powershell.exe.",
+      "groupName": "advanced"
+    },
+    {
+      "name": "workingDirectory",
+      "type": "filePath",
+      "label": "Working Directory",
+      "required": false,
+      "defaultValue": "",
+      "helpMarkDown": "Working directory where the script is run.",
+      "groupName": "advanced"
+    }
+  ],
+  "dataSourceBindings": [
+    {
+      "target": "resourceGroupName",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "dataSourceName": "AzureResourceGroups"
+    },
+    {
+      "target": "KeyVaultName",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "dataSourceName": "AzureKeyVaultsListV2",
+      "resultTemplate": "{ \"Value\" : \"{{{name}}}\", \"DisplayValue\" : \"{{{name}}}\" }"
+    }
+  ],
+  "instanceNameFormat": "Azure PowerShell script: $(ScriptPath) for $(KeyVaultName) in $(ConnectedServiceNameARM)",
+  "execution": {
+    "PowerShell3": {
+      "target": "azurepowershell.ps1",
+      "platforms": ["windows"]
+    },
+    "Node": {
+      "target": "azurepowershell.js",
+      "argumentFormat": ""
+    }
+  },
+  "messages": {
+    "GeneratingScript": "Generating script.",
+    "JS_FormattedCommand": "Formatted command: %s",
+    "InvalidScriptArguments0": "Invalid script arguments '{0}'. Line breaks are not allowed.",
+    "InvalidScriptPath0": "Invalid script path '{0}'. Invalid path characters specified.",
+    "InvalidAzurePsVersion": "The Azure PowerShell version '{0}' specified is not in the correct format. Please check the format. An example of correct format is 1.0.1",
+    "JS_ExitCode": "PowerShell exited with code '%s'.",
+    "JS_Stderr": "PowerShell wrote one or more lines to the standard error stream.",
+    "ExpiredServicePrincipal": "Could not fetch access token for Azure. Verify if the Service Principal used is valid and not expired."
+  }
+}

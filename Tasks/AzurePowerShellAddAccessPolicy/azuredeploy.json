@@ -1,0 +1,68 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "virtualMachineName": {
+          "type": "string",
+          "defaultValue": "test-kv-or-vm"
+      },
+      "identityType" : {
+          "type": "string",
+          "defaultValue": "systemAssigned"
+      },
+      "keyVaultName": {
+          "defaultValue": "test-kv-or",
+          "type": "String",
+          "metadata": {
+              "description": "Specifies the name of the key vault."
+          }
+      },
+      "secretsPermissions": {
+          "defaultValue": [
+              "get",
+              "list"
+          ],
+          "type": "Array",
+          "metadata": {
+              "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
+          }
+      }
+  },
+  "resources": [
+      {
+          "name": "[parameters('virtualMachineName')]",
+          "type": "Microsoft.Compute/virtualMachines",
+          "apiVersion": "2019-07-01",
+          "location": "[resourceGroup().location]",
+          "properties": {},
+          "identity": {
+              "type": "[parameters('identityType')]"
+          }
+      },
+      {
+          "type": "Microsoft.KeyVault/vaults/accessPolicies",
+          "apiVersion": "2018-02-14",
+          "name": "[concat(parameters('keyVaultName'), '/add')]",
+          "dependsOn": [
+              "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
+          ],
+          "properties": {
+              "accessPolicies": [
+                  {
+                      "tenantId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName')), '2017-03-30', 'Full').identity.tenantId]",
+                      "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName')), '2017-03-30', 'Full').identity.principalId]",
+                      "permissions": {
+                          "secrets": "[parameters('secretsPermissions')]"
+                      }
+                  }
+              ]
+          }
+      }
+  ],
+  "outputs": {
+      "identityType": {
+          "type": "string",
+          "value": "[parameters('identityType')]"
+      }
+  }
+}

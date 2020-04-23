@@ -33,6 +33,7 @@
         "AzurePowerShellV3",
         "AzurePowerShellV4",
         "AzurePowerShellV5",
+        "AzurePowerShellAddAccessPolicy",
         "AzureResourceGroupDeploymentV2",
         "AzureResourceManagerTemplateDeploymentV3",
         "AzureRmWebAppDeploymentV3",
@@ -44,7 +45,7 @@
         "BatchScriptV1",
         "CacheBetaV0",
         "CacheBetaV1",
-        "CacheV2", 
+        "CacheV2",
         "ChefV1",
         "ChefKnifeV1",
         "CMakeV1",
@@ -192,6 +193,7 @@
         "Strings",
         "task.json",
         "task.loc.json",
+        "azuredeploy.json",
         "Tests"
     ]
 }
